@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { hashPassword, isPasswordCorrect } from 'src/lib/utils';
 import { Roles, UserDto } from 'src/users/dto/create-user-dto';
 import { User } from 'src/users/schema/User.schema';
@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 type TokenPayload = {
   email: string;
   sub: {
+    id: mongoose.Types.ObjectId;
     name: string;
     role: Roles;
   };
@@ -47,6 +48,7 @@ export class AuthService {
     }
 
     const credentials: Payload = {
+      id: user._id,
       email,
       name: (user as User).name,
       role: (user as User).role,
@@ -62,6 +64,7 @@ export class AuthService {
     const payload: TokenPayload = {
       email: retrievedUser.email,
       sub: {
+        id: retrievedUser.id,
         name: retrievedUser.name,
         role: retrievedUser.role,
       },
