@@ -36,6 +36,8 @@ export class UsersService {
     return await this.Users.find(filter).select('-password');
   }
 
+  // ---- Find a User ---- //
+
   async findUser(requestedId: string): Promise<UserDto | null> {
     const isValidId = await validateObjectId(requestedId);
 
@@ -53,6 +55,13 @@ export class UsersService {
         throw new UnauthorizedException(
           'Users info not accessible; Action not allowed',
         );
+    }
+
+    if (requester.sub.role !== 'ADMIN') {
+      const filteredInfo = await this.Users.findById(requestedId).select(
+        '-password -_id -role',
+      );
+      return filteredInfo as UserDto;
     }
 
     return userToFind as UserDto;
