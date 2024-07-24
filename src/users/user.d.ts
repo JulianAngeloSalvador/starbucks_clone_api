@@ -1,7 +1,8 @@
 import { Request } from 'express';
+
 import { User } from 'src/users/schema/User.schema';
 
-export type Payload = Omit<User, 'password'>;
+export type Payload = { id: mongoose.Types.ObjectId } & Omit<User, 'password'>;
 
 declare global {
   namespace Express {
