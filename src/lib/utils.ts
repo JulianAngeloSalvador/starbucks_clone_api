@@ -21,7 +21,7 @@ export async function validateObjectId(id: string) {
 }
 
 export async function accessibility(targetId: string, requester: Payload) {
-  // decided to go with level of accessibility //
+  // level of accessibility //
   /* 
     0 = no access
     1 = limited access
