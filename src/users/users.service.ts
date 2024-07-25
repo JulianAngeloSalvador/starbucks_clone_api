@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ExecutionContext,
   Inject,
   Injectable,
   NotFoundException,
@@ -10,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schema/User.schema';
 import { Roles, UserDto } from './dto/create-user-dto';
-import { validateObjectId } from 'src/lib/utils';
+import { accessibility, validateObjectId } from 'src/lib/utils';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 
@@ -46,24 +45,20 @@ export class UsersService {
 
     const userToFind =
       await this.Users.findById(requestedId).select('-password');
-    const requester = this.request.user;
+    const requester = this.request.user.sub;
 
     if (!userToFind) throw new NotFoundException('User not found');
 
-    if (requestedId !== requester.sub.id) {
-      if (requester.sub.role !== 'ADMIN')
-        throw new UnauthorizedException(
-          'Users info not accessible; Action not allowed',
-        );
-    }
+    const accessLevel = await accessibility(requestedId, requester);
+    if (accessLevel === 0)
+      throw new UnauthorizedException('Action not allowed. Id not matched.');
 
-    if (requester.sub.role !== 'ADMIN') {
+    if (accessLevel === 1) {
       const filteredInfo = await this.Users.findById(requestedId).select(
         '-password -_id -role',
       );
       return filteredInfo as UserDto;
     }
-
     return userToFind as UserDto;
   }
 }
